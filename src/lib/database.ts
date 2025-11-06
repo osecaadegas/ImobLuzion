@@ -1,54 +1,54 @@
-import { supabase, type DatabaseProperty, type UserProfile } from './supabase'
+import { supabase, type UserProfile } from './supabase'
 import type { Property } from '../types/Property'
 
 // Helper function to convert database property to app property format
-function transformDatabaseProperty(dbProp: DatabaseProperty): Property {
+function transformDatabaseProperty(dbProp: any): Property {
   return {
     id: dbProp.id,
     title: dbProp.title,
     description: dbProp.description || '',
     price: dbProp.price,
     location: {
-      address: dbProp.location.address,
-      city: dbProp.location.city,
-      state: dbProp.location.state,
-      zipCode: dbProp.location.zipCode,
-      coordinates: dbProp.location.coordinates
+      address: dbProp.location?.address,
+      city: dbProp.location?.city || '',
+      state: dbProp.location?.state,
+      zipCode: dbProp.location?.zipCode,
+      coordinates: dbProp.location?.coordinates
     },
     details: {
-      bedrooms: dbProp.details.bedrooms,
-      bathrooms: dbProp.details.bathrooms,
-      sqft: dbProp.details.sqft,
-      propertyType: dbProp.details.propertyType,
-      yearBuilt: dbProp.details.yearBuilt
+      bedrooms: dbProp.details?.bedrooms || 0,
+      bathrooms: dbProp.details?.bathrooms || 0,
+      sqft: dbProp.details?.sqft || 0,
+      propertyType: dbProp.details?.propertyType || 'other',
+      yearBuilt: dbProp.details?.yearBuilt
     },
-    features: dbProp.features,
+    features: dbProp.features || [],
     type: dbProp.type,
     status: dbProp.status,
     financials: dbProp.financials,
-    images: dbProp.images,
+    images: dbProp.images || [],
     soldDate: dbProp.sold_date,
     listedDate: dbProp.listed_date,
     updatedDate: dbProp.updated_date,
-    isArchived: dbProp.is_archived,
+    isArchived: dbProp.is_archived || false,
     agent: dbProp.agent
   }
 }
 
 // Helper function to convert app property to database format
-function transformPropertyToDatabase(property: Omit<Property, 'id'>): Omit<DatabaseProperty, 'id' | 'created_at' | 'listed_date' | 'updated_date'> {
+function transformPropertyToDatabase(property: Omit<Property, 'id'>): any {
   return {
     title: property.title,
     description: property.description,
     price: property.price,
     location: property.location,
     details: property.details,
-    features: property.features,
+    features: property.features || [],
     amenities: [],
     type: property.type,
     status: property.status,
     financials: property.financials || {},
-    images: property.images,
+    images: property.images || [],
     sold_date: property.soldDate,
     is_archived: property.isArchived || false,
     agent: property.agent || {}
