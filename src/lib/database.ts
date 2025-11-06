@@ -8,8 +8,20 @@ function transformDatabaseProperty(dbProp: DatabaseProperty): Property {
     title: dbProp.title,
     description: dbProp.description || '',
     price: dbProp.price,
-    location: dbProp.location,
-    details: dbProp.details,
+    location: {
+      address: dbProp.location.address,
+      city: dbProp.location.city,
+      state: dbProp.location.state,
+      zipCode: dbProp.location.zipCode,
+      coordinates: dbProp.location.coordinates
+    },
+    details: {
+      bedrooms: dbProp.details.bedrooms,
+      bathrooms: dbProp.details.bathrooms,
+      sqft: dbProp.details.sqft,
+      propertyType: dbProp.details.propertyType,
+      yearBuilt: dbProp.details.yearBuilt
+    },
     features: dbProp.features,
     type: dbProp.type,
     status: dbProp.status,
@@ -17,6 +29,7 @@ function transformDatabaseProperty(dbProp: DatabaseProperty): Property {
     images: dbProp.images,
     soldDate: dbProp.sold_date,
     listedDate: dbProp.listed_date,
+    updatedDate: dbProp.updated_date,
     isArchived: dbProp.is_archived,
     agent: dbProp.agent
   }

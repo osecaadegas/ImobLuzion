@@ -6,10 +6,10 @@ export interface Property {
   price: number;
   images: string[]; // Array of image URLs
   location: {
-    address: string;
+    address?: string;
     city: string;
-    state: string;
-    zipCode: string;
+    state?: string;
+    zipCode?: string;
     coordinates?: {
       lat: number;
       lng: number;
@@ -20,7 +20,7 @@ export interface Property {
     bathrooms: number;
     sqft: number;
     yearBuilt?: number;
-    propertyType: 'apartment' | 'house' | 'condo' | 'townhouse' | 'villa';
+    propertyType: 'apartment' | 'house' | 'condo' | 'townhouse' | 'other';
     lotSize?: number;
     parking?: number;
     floors?: number;
@@ -42,16 +42,16 @@ export interface Property {
     profit?: number; // soldPrice - totalInvestment (calculated)
     profitMargin?: number; // (profit / totalInvestment) * 100 (calculated)
   };
-  soldDate?: Date; // Date when property was sold
+  soldDate?: string; // Date when property was sold
   isArchived?: boolean; // Whether property is archived
-  agent: {
-    name: string;
-    phone: string;
-    email: string;
-    image: string;
+  agent?: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    image?: string;
   };
-  listedDate: Date;
-  updatedDate: Date;
+  listedDate?: string;
+  updatedDate?: string;
   isLiked?: boolean; // For user favorites
 }
 
@@ -280,7 +280,7 @@ export const mockEnhancedProperties: Property[] = [
       bathrooms: 4,
       sqft: 3500,
       yearBuilt: 2019,
-      propertyType: 'villa',
+      propertyType: 'other',
       parking: 3,
       floors: 2,
       lotSize: 15000,
