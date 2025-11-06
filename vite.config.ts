@@ -13,5 +13,13 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true
+  },
+  preview: {
+    host: true,
+    port: process.env.PORT ? parseInt(process.env.PORT) : 4173,
+    allowedHosts: [
+      'luzionapp.onrender.com',
+      '.onrender.com'
+    ]
   }
 })
