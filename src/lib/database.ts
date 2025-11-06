@@ -274,6 +274,7 @@ export const authAPI = {
 
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
     try {
+
       const { data, error } = await supabase
         .from('user_profiles')
         .update(updates)

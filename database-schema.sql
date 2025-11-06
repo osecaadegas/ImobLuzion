@@ -121,14 +121,19 @@ CREATE POLICY "Admins can view all profiles" ON user_profiles
     )
   );
 
--- Function to handle new user registration
+-- Function to handle new user registration (works with Google OAuth)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.user_profiles (id, name, role)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'name', 'User'),
+    COALESCE(
+      NEW.raw_user_meta_data->>'full_name', 
+      NEW.raw_user_meta_data->>'name', 
+      split_part(NEW.email, '@', 1),
+      'User'
+    ),
     COALESCE(NEW.raw_user_meta_data->>'role', 'user')
   );
   RETURN NEW;

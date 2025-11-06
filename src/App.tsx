@@ -5,6 +5,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { PropertyProvider } from './contexts/PropertyContext';
 import { DarkModeProvider } from './contexts/DarkModeContext';
 import LoginForm from './components/LoginForm';
+import AuthCallback from './components/AuthCallback';
 import AdminPanel from './pages/AdminPanel';
 import SoldProperties from './pages/SoldProperties';
 import FinancialDashboard from './pages/FinancialDashboard';
@@ -42,6 +43,9 @@ function AppRoutes() {
           />
         } 
       />
+      
+      {/* Auth callback route for OAuth */}
+      <Route path="/auth/callback" element={<AuthCallback />} />
       
       {/* Legacy dashboard route - redirect to home */}
       <Route path="/dashboard" element={<Navigate to="/" replace />} />
