@@ -1,0 +1,18 @@
+{
+  "name": "deploy-real-estate-app",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm run build",
+    "deploy:vercel": "vercel --prod",
+    "deploy:netlify": "npm run build && netlify deploy --prod --dir=dist",
+    "setup:supabase": "echo 'Go to supabase.com and create a new project, then run the database-schema.sql file'",
+    "setup:env": "echo 'Create .env.local file with your Supabase credentials'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.5.0",
+    "netlify-cli": "^17.0.0"
+  }
+}
