@@ -152,9 +152,9 @@ export const emailService = {
 
   // EmailJS integration example (optional - requires API key)
   async sendViaEmailJS(
-    recipients: EmailRecipient[],
-    propertyData: PropertyEmailData,
-    language: 'pt' | 'en' = 'pt'
+    _recipients: EmailRecipient[],
+    _propertyData: PropertyEmailData,
+    _language: 'pt' | 'en' = 'pt'
   ): Promise<{ success: boolean; message: string }> {
     // To use EmailJS:
     // 1. Sign up at https://www.emailjs.com/
