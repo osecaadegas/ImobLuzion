@@ -58,8 +58,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (userId: string) => {
     try {
-      const profile = await authAPI.getUserProfile(userId);
+      let profile = await authAPI.getUserProfile(userId);
       const currentUser = await authAPI.getCurrentUser();
+      
+      // If profile doesn't exist (Google OAuth first-time users), wait a moment and try again
+      if (!profile && currentUser) {
+        console.log('Profile not found, waiting for trigger to create it...');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        profile = await authAPI.getUserProfile(userId);
+      }
       
       if (profile && currentUser) {
         setUser({
@@ -69,6 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: profile.role,
           avatar: `https://via.placeholder.com/40x40/3b82f6/white?text=${profile.name.charAt(0).toUpperCase()}`
         });
+        console.log('User profile loaded:', profile);
+      } else {
+        console.error('Failed to load user profile after multiple attempts');
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -120,17 +130,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = async () => {
     try {
       setIsLoading(true);
+      console.log('Starting Google OAuth...');
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
       
       if (error) {
         console.error('Google login error:', error);
+        setIsLoading(false);
         throw error;
       }
+      
+      // Don't set loading to false here - the redirect will happen
     } catch (error) {
       console.error('Google login error:', error);
       setIsLoading(false);

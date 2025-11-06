@@ -8,6 +8,9 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        console.log('Processing auth callback...');
+        
+        // Get the current session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -16,11 +19,15 @@ export default function AuthCallback() {
           return;
         }
 
-        if (data.session) {
-          // User successfully authenticated
-          navigate('/');
+        if (data.session && data.session.user) {
+          console.log('Auth callback successful, user:', data.session.user.email);
+          
+          // Wait a moment for the database trigger to create the user profile
+          setTimeout(() => {
+            navigate('/');
+          }, 2000);
         } else {
-          // No session found
+          console.log('No session found in callback');
           navigate('/login');
         }
       } catch (error) {
@@ -37,6 +44,7 @@ export default function AuthCallback() {
       <div className="text-center">
         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-gray-600 dark:text-gray-400">Completing authentication...</p>
+        <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">Setting up your profile...</p>
       </div>
     </div>
   );
