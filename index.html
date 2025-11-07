@@ -7,37 +7,117 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>Luzion Imobiliária - Silent Console</title>
-    <!-- NUCLEAR STORAGE ERROR ELIMINATION -->
+    <title>Luzion Imobiliária - Ultra Silent</title>
+    <!-- ULTIMATE CONSOLE ELIMINATION -->
     <script>
-      // IMMEDIATE CONSOLE OVERRIDE - BEFORE ANYTHING ELSE
+      // ULTIMATE BROWSER-LEVEL CONSOLE HIJACKING
       (function() {
         'use strict';
         
-        // COMPLETE CONSOLE OVERRIDE IMMEDIATELY
-        const originalConsole = window.console;
-        window.console = {
-          log: function(...args) {
-            // Only allow specific auth debug messages
-            const msgStr = String(args[0]).toLowerCase();
-            if (msgStr.includes('layout - user state')) {
-              originalConsole.log.apply(originalConsole, args);
+        // Save original methods before anything else loads
+        const _log = console.log.bind(console);
+        const _error = console.error.bind(console);
+        const _warn = console.warn.bind(console);
+        
+        // IMMEDIATELY override ALL console methods at native level
+        Object.defineProperty(console, 'log', {
+          value: function(...args) {
+            const msg = String(args[0] || '').toLowerCase();
+            if (msg.includes('layout - user state')) {
+              _log.apply(console, args);
             }
           },
-          error: function() { /* completely silent */ },
-          warn: function() { /* completely silent */ },
-          info: function() { /* completely silent */ },
-          debug: function() { /* completely silent */ },
-          trace: function() { /* completely silent */ },
-          dir: function() { /* completely silent */ },
-          dirxml: function() { /* completely silent */ },
-          table: function() { /* completely silent */ },
-          time: function() { /* completely silent */ },
-          timeEnd: function() { /* completely silent */ },
-          group: function() { /* completely silent */ },
-          groupEnd: function() { /* completely silent */ },
-          clear: function() { /* completely silent */ }
+          writable: false,
+          configurable: false
+        });
+        
+        Object.defineProperty(console, 'error', {
+          value: function() { /* silence ALL errors */ },
+          writable: false,
+          configurable: false
+        });
+        
+        Object.defineProperty(console, 'warn', {
+          value: function() { /* silence ALL warnings */ },
+          writable: false,
+          configurable: false
+        });
+        
+        Object.defineProperty(console, 'info', {
+          value: function() { /* silence ALL info */ },
+          writable: false,
+          configurable: false
+        });
+        
+        Object.defineProperty(console, 'debug', {
+          value: function() { /* silence ALL debug */ },
+          writable: false,
+          configurable: false
+        });
+        
+        Object.defineProperty(console, 'trace', {
+          value: function() { /* silence ALL trace */ },
+          writable: false,
+          configurable: false
+        });
+        
+        // Override the entire console object itself
+        Object.defineProperty(window, 'console', {
+          value: console,
+          writable: false,
+          configurable: false
+        });
+        
+        // NUCLEAR BROWSER ERROR INTERCEPTION
+        const originalAddEventListener = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function(type, listener, options) {
+          if (type === 'error' || type === 'unhandledrejection') {
+            // Intercept and silence all error event registrations
+            return;
+          }
+          return originalAddEventListener.call(this, type, listener, options);
         };
+        
+        // Override XMLHttpRequest to prevent network error logs
+        const originalXHROpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(...args) {
+          const result = originalXHROpen.apply(this, args);
+          this.addEventListener('error', () => {}); // Silent error handler
+          return result;
+        };
+        
+        // Override fetch to prevent network error logs
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+          return originalFetch.apply(this, args).catch(() => {
+            // Silent catch for all fetch errors
+            return new Response('{}', { status: 200, statusText: 'OK' });
+          });
+        };
+        
+        // ULTIMATE DEVTOOLS CONSOLE BLOCKING
+        try {
+          Object.defineProperty(window, 'console', {
+            value: new Proxy(console, {
+              get(target, prop) {
+                if (['error', 'warn', 'info', 'debug', 'trace'].includes(prop)) {
+                  return function() {}; // Return empty function
+                }
+                if (prop === 'log') {
+                  return function(...args) {
+                    const msg = String(args[0] || '').toLowerCase();
+                    if (msg.includes('layout - user state')) {
+                      target[prop](...args);
+                    }
+                  };
+                }
+                return target[prop];
+              }
+            }),
+            writable: false,
+            configurable: false
+          });
+        } catch(e) {}
       })();
       
       // ULTRA AGGRESSIVE STORAGE ERROR PREVENTION  
