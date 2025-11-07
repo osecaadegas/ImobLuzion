@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, MapPin, Bed, Bath, Square, Phone, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
 import { Property } from '../types/Property';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -55,10 +55,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onLike, onContact
     }).format(price);
   };
 
-  const timeAgo = formatDistanceToNow(listedDate, { 
-    addSuffix: true,
-    locale: language === 'pt' ? ptBR : enUS 
-  });
+  const timeAgo = formatDistanceToNow(
+    typeof listedDate === 'string' ? parseISO(listedDate) : listedDate, 
+    { 
+      addSuffix: true,
+      locale: language === 'pt' ? ptBR : enUS 
+    }
+  );
 
   return (
     <div className="group bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 rounded-2xl shadow-xl hover:shadow-2xl overflow-hidden transform hover:-translate-y-1 transition-all duration-300 border border-gray-100 dark:border-gray-700">
