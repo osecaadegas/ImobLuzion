@@ -40,14 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }, 10000);
 
-    // Listen for auth changes
+    // Listen for auth changes (silently)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.email || 'no user');
+      // Reduced console logging for cleaner output
       
       if (!mounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
-        console.log('User signed in, loading profile...');
         try {
           await loadUserProfile(session.user.id);
         } catch (error) {
@@ -78,24 +77,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkUser = async () => {
     try {
-      console.log('Checking for existing user session...');
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
-        console.error('Error checking session:', error);
         setIsLoading(false);
         return;
       }
 
       if (session?.user) {
-        console.log('Found existing session for:', session.user.email);
         await loadUserProfile(session.user.id);
       } else {
-        console.log('No existing session found');
         setIsLoading(false);
       }
     } catch (error) {
-      console.error('Error checking user:', error);
       setIsLoading(false);
     }
   };

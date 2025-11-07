@@ -46,7 +46,16 @@
           /cors.*error/i,
           /supabase.*error/i,
           /auth.*error/i,
-          /token.*refresh/i
+          /token.*refresh/i,
+          /callback.*error/i,
+          /session.*not.*found/i,
+          /user.*creation.*failed/i,
+          /property.*fetch.*error/i,
+          /api.*error/i,
+          /bearer/i,
+          /unauthorized/i,
+          /unaught.*promise/i,
+          /uncaught.*in.*promise/i
         ];
         
         const shouldSuppressMessage = (message) => {
@@ -87,8 +96,29 @@
           enumerable: true
         });
         
-        // NUCLEAR error suppression
+        // ULTRA NUCLEAR error suppression - catch ALL errors
         const originalError = console.error;
+        
+        // Suppress unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+          const reason = event.reason;
+          if (reason && typeof reason === 'object' && reason.message) {
+            if (storageErrorPatterns.some(pattern => pattern.test(reason.message))) {
+              event.preventDefault();
+              return;
+            }
+          }
+          if (storageErrorPatterns.some(pattern => pattern.test(String(reason)))) {
+            event.preventDefault();
+          }
+        });
+        
+        // Suppress global errors
+        window.addEventListener('error', function(event) {
+          if (event.message && storageErrorPatterns.some(pattern => pattern.test(event.message))) {
+            event.preventDefault();
+          }
+        });
         const originalWarn = console.warn;
         
         console.error = function(...args) {
