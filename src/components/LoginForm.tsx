@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import DarkModeToggle from './DarkModeToggle';
 import { Eye, EyeOff, LogIn, UserPlus, Home } from 'lucide-react';
+import { SafeStorage } from '../lib/storage';
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -39,8 +40,15 @@ export default function LoginForm({ onToggleMode, isRegisterMode }: LoginFormPro
       } else {
         // Redirect based on user role after successful login
         // Check user role from the auth context after login
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        if (currentUser.role === 'admin') {
+        const currentUserStr = SafeStorage.getItemWithMemoryFallback('currentUser', '{}');
+        let currentUser = {};
+        try {
+          currentUser = JSON.parse(currentUserStr);
+        } catch (error) {
+          console.warn('Error parsing currentUser from storage:', error);
+        }
+        
+        if ((currentUser as any).role === 'admin') {
           navigate('/admin');
         } else {
           navigate('/');

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { SafeStorage } from '../lib/storage';
 
 interface DarkModeContextType {
   isDarkMode: boolean;
@@ -21,9 +22,9 @@ interface DarkModeProviderProps {
 
 export const DarkModeProvider: React.FC<DarkModeProviderProps> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    // Check localStorage for saved preference
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode !== null) {
+    // Check localStorage for saved preference with safe storage
+    const savedMode = SafeStorage.getItemWithMemoryFallback('darkMode');
+    if (savedMode !== '') {
       return savedMode === 'true';
     }
     // Check system preference
@@ -37,8 +38,8 @@ export const DarkModeProvider: React.FC<DarkModeProviderProps> = ({ children }) 
     } else {
       document.documentElement.classList.remove('dark');
     }
-    // Save preference to localStorage
-    localStorage.setItem('darkMode', isDarkMode.toString());
+    // Save preference to localStorage with safe storage
+    SafeStorage.setItemWithMemoryFallback('darkMode', isDarkMode.toString());
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {
