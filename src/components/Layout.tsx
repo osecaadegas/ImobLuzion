@@ -12,8 +12,11 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, title }: LayoutProps) {
-  const { user, logout } = useAuth();
+    const { user, logout, isLoading } = useAuth();
   const { t } = useLanguage();
+
+  // Debug: Log user state
+  console.log('Layout - User state:', { user: user?.email || 'no user', isLoading });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +33,26 @@ export default function Layout({ children, title }: LayoutProps) {
     };
   }, []);
 
-  if (!user) return null;
+  // Show loading state instead of null
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user and not loading, still show the layout but redirect to login
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

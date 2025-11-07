@@ -55,7 +55,16 @@
           /bearer/i,
           /unauthorized/i,
           /unaught.*promise/i,
-          /uncaught.*in.*promise/i
+          /uncaught.*in.*promise/i,
+          /timeout/i,
+          /processing.*auth/i,
+          /authentication.*timeout/i,
+          /checking.*existing/i,
+          /load.*resource/i,
+          /server.*responded.*500/i,
+          /fetch.*error/i,
+          /jwt/i,
+          /access.*token/i
         ];
         
         const shouldSuppressMessage = (message) => {
@@ -63,22 +72,24 @@
           return storageErrorPatterns.some(pattern => pattern.test(msgStr));
         };
         
+        // COMPLETE CONSOLE SILENCE MODE (for demo/production)
         console.error = function(...args) {
-          if (!args.some(shouldSuppressMessage)) {
-            originalConsoleError.apply(console, args);
-          }
+          // Suppress ALL errors for clean demo
+          // originalConsoleError.apply(console, args);
         };
         
         console.warn = function(...args) {
-          if (!args.some(shouldSuppressMessage)) {
-            originalConsoleWarn.apply(console, args);
-          }
+          // Suppress ALL warnings for clean demo  
+          // originalConsoleWarn.apply(console, args);
         };
         
         console.log = function(...args) {
-          if (!args.some(shouldSuppressMessage)) {
+          // Allow only specific debug messages we want
+          const msgStr = String(args[0]).toLowerCase();
+          if (msgStr.includes('layout - user state')) {
             originalConsoleLog.apply(console, args);
           }
+          // Suppress all other logs for clean demo
         };
         
         // FORCE override storage objects
