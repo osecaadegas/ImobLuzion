@@ -129,133 +129,152 @@ export default function AdminPanel() {
   };
 
   const handleSaveProperty = async (propertyData: PropertyFormData) => {
-    if (editingProperty) {
-      // Update existing property
-      setProperties(prev => prev.map(p => 
-        p.id === editingProperty.id 
-          ? {
-              ...p,
-              title: propertyData.title,
-              description: propertyData.description,
-              price: propertyData.price,
-              images: propertyData.images,
-              location: {
-                address: propertyData.address,
-                city: propertyData.city,
-                state: propertyData.state,
-                zipCode: propertyData.zipCode,
-                coordinates: p.location.coordinates // Keep existing coordinates
-              },
-              details: {
-                ...p.details,
-                bedrooms: propertyData.bedrooms,
-                bathrooms: propertyData.bathrooms,
-                sqft: propertyData.sqft,
-                yearBuilt: propertyData.yearBuilt || undefined,
-                propertyType: propertyData.propertyType,
-                lotSize: propertyData.lotSize || undefined,
-                parking: propertyData.parking || undefined
-              },
-              features: propertyData.features,
-              type: propertyData.type,
-              status: propertyData.status,
-              agent: {
-                name: propertyData.agentName,
-                phone: propertyData.agentPhone,
-                email: propertyData.agentEmail,
-                image: p.agent.image // Keep existing image
-              },
-              updatedDate: new Date()
+    try {
+      if (editingProperty) {
+        // Update existing property
+        const updatedProperty = {
+          title: propertyData.title,
+          description: propertyData.description,
+          price: propertyData.price,
+          images: propertyData.images,
+          location: {
+            address: propertyData.address,
+            city: propertyData.city,
+            state: propertyData.state,
+            zipCode: propertyData.zipCode,
+            coordinates: editingProperty.location.coordinates // Keep existing coordinates
+          },
+          details: {
+            ...editingProperty.details,
+            bedrooms: propertyData.bedrooms,
+            bathrooms: propertyData.bathrooms,
+            sqft: propertyData.sqft,
+            yearBuilt: propertyData.yearBuilt || undefined,
+            propertyType: propertyData.propertyType,
+            lotSize: propertyData.lotSize || undefined,
+            parking: propertyData.parking || undefined
+          },
+          features: propertyData.features,
+          type: propertyData.type,
+          status: propertyData.status,
+          agent: {
+            name: propertyData.agentName,
+            phone: propertyData.agentPhone,
+            email: propertyData.agentEmail,
+            image: editingProperty.agent.image // Keep existing image
+          },
+          updatedDate: new Date().toISOString()
+        };
+
+        const result = await propertyAPI.update(editingProperty.id, updatedProperty);
+        if (result) {
+          await refreshProperties(); // Reload from database
+          console.log('Property updated successfully');
+        } else {
+          alert('Failed to update property. Please try again.');
+          return;
+        }
+      } else {
+        // Add new property
+        const newProperty = {
+          title: propertyData.title,
+          description: propertyData.description,
+          price: propertyData.price,
+          images: propertyData.images,
+          location: {
+            address: propertyData.address,
+            city: propertyData.city,
+            state: propertyData.state,
+            zipCode: propertyData.zipCode
+          },
+          details: {
+            bedrooms: propertyData.bedrooms,
+            bathrooms: propertyData.bathrooms,
+            sqft: propertyData.sqft,
+            yearBuilt: propertyData.yearBuilt || undefined,
+            propertyType: propertyData.propertyType,
+            lotSize: propertyData.lotSize || undefined,
+            parking: propertyData.parking || undefined
+          },
+          features: propertyData.features,
+          type: propertyData.type,
+          status: propertyData.status,
+          agent: {
+            name: propertyData.agentName,
+            phone: propertyData.agentPhone,
+            email: propertyData.agentEmail,
+            image: `https://via.placeholder.com/150x150/6c5ce7/white?text=${propertyData.agentName.charAt(0).toUpperCase()}`
+          },
+          listedDate: new Date().toISOString(),
+          updatedDate: new Date().toISOString(),
+          isLiked: false
+        };
+
+        const result = await propertyAPI.create(newProperty);
+        if (result) {
+          await refreshProperties(); // Reload from database
+          console.log('Property created successfully');
+
+          // Send email notifications for new properties only
+          setShowEmailNotification(true);
+          setEmailStatus({ sending: true, success: false, message: '', sentCount: 0 });
+          
+          // Send email notifications to all users
+          const recipients = users.map(user => ({
+            name: user.name,
+            email: user.email
+          }));
+          
+          const propertyEmailData = {
+            propertyTitle: propertyData.title,
+            propertyPrice: propertyData.price,
+            propertyLocation: `${propertyData.address}, ${propertyData.city}`,
+            propertyImage: propertyData.images[0] || '',
+            propertyLink: `${window.location.origin}/property/${result.id}`
+          };
+          
+          try {
+            // Send emails
+            const emailResult = await emailService.sendNewPropertyNotification(
+              recipients,
+              propertyEmailData,
+              language
+            );
+            
+            // Update email status
+            setEmailStatus({
+              sending: false,
+              success: emailResult.success,
+              message: emailResult.message,
+              sentCount: emailResult.sentCount
+            });
+            
+            // Auto-close notification after 5 seconds if successful
+            if (emailResult.success) {
+              setTimeout(() => {
+                setShowEmailNotification(false);
+              }, 5000);
             }
-          : p
-      ));
-      
-      setShowPropertyForm(false);
-      setEditingProperty(null);
-    } else {
-      // Add new property
-      const newPropertyId = Date.now().toString();
-      const newProperty: Property = {
-        id: newPropertyId,
-        title: propertyData.title,
-        description: propertyData.description,
-        price: propertyData.price,
-        images: propertyData.images,
-        location: {
-          address: propertyData.address,
-          city: propertyData.city,
-          state: propertyData.state,
-          zipCode: propertyData.zipCode
-        },
-        details: {
-          bedrooms: propertyData.bedrooms,
-          bathrooms: propertyData.bathrooms,
-          sqft: propertyData.sqft,
-          yearBuilt: propertyData.yearBuilt || undefined,
-          propertyType: propertyData.propertyType,
-          lotSize: propertyData.lotSize || undefined,
-          parking: propertyData.parking || undefined
-        },
-        features: propertyData.features,
-        type: propertyData.type,
-        status: propertyData.status,
-        agent: {
-          name: propertyData.agentName,
-          phone: propertyData.agentPhone,
-          email: propertyData.agentEmail,
-          image: `https://via.placeholder.com/150x150/6c5ce7/white?text=${propertyData.agentName.charAt(0).toUpperCase()}`
-        },
-        listedDate: new Date(),
-        updatedDate: new Date(),
-        isLiked: false
-      };
-      
-      // Add property to list
-      setProperties(prev => [...prev, newProperty]);
-      
-      // Close form first
-      setShowPropertyForm(false);
-      setEditingProperty(null);
-      
-      // Show email notification modal
-      setShowEmailNotification(true);
-      setEmailStatus({ sending: true, success: false, message: '', sentCount: 0 });
-      
-      // Send email notifications to all users
-      const recipients = users.map(user => ({
-        name: user.name,
-        email: user.email
-      }));
-      
-      const propertyEmailData = {
-        propertyTitle: propertyData.title,
-        propertyPrice: propertyData.price,
-        propertyLocation: `${propertyData.address}, ${propertyData.city}`,
-        propertyImage: propertyData.images[0] || '',
-        propertyLink: `${window.location.origin}/property/${newPropertyId}`
-      };
-      
-      // Send emails
-      const result = await emailService.sendNewPropertyNotification(
-        recipients,
-        propertyEmailData,
-        language
-      );
-      
-      // Update email status
-      setEmailStatus({
-        sending: false,
-        success: result.success,
-        message: result.message,
-        sentCount: result.sentCount
-      });
-      
-      // Auto-close notification after 5 seconds if successful
-      if (result.success) {
-        setTimeout(() => {
-          setShowEmailNotification(false);
-        }, 5000);
+          } catch (emailError) {
+            console.error('Error sending notifications:', emailError);
+            setEmailStatus({
+              sending: false,
+              success: false,
+              message: 'Property created but failed to send notifications',
+              sentCount: 0
+            });
+          }
+        } else {
+          alert('Failed to create property. Please try again.');
+          return;
+        }
       }
+      
+      setShowPropertyForm(false);
+      setEditingProperty(null);
+    } catch (error) {
+      console.error('Error saving property:', error);
+      alert('Failed to save property. Please try again.');
     }
   };
 
@@ -337,24 +356,41 @@ export default function AdminPanel() {
     setShowSoldModal(true);
   };
 
-  const handleConfirmSold = (propertyId: string, soldPrice: number) => {
-    setProperties(prev => prev.map(p => 
-      p.id === propertyId 
-        ? {
-            ...p,
-            status: 'sold' as const,
-            financials: {
-              ...p.financials,
-              soldPrice,
-              profit: soldPrice - ((p.financials?.purchasePrice || 0) + (p.financials?.projectCosts || 0)),
-              profitMargin: ((soldPrice - ((p.financials?.purchasePrice || 0) + (p.financials?.projectCosts || 0))) / ((p.financials?.purchasePrice || 0) + (p.financials?.projectCosts || 0))) * 100
-            },
-            soldDate: new Date(),
-            isArchived: true,
-            updatedDate: new Date()
-          }
-        : p
-    ));
+  const handleConfirmSold = async (propertyId: string, soldPrice: number) => {
+    try {
+      const property = properties.find(p => p.id === propertyId);
+      if (!property) {
+        alert('Property not found');
+        return;
+      }
+
+      const updatedProperty = {
+        ...property,
+        status: 'sold' as const,
+        financials: {
+          ...property.financials,
+          soldPrice,
+          profit: soldPrice - ((property.financials?.purchasePrice || 0) + (property.financials?.projectCosts || 0)),
+          profitMargin: ((soldPrice - ((property.financials?.purchasePrice || 0) + (property.financials?.projectCosts || 0))) / ((property.financials?.purchasePrice || 0) + (property.financials?.projectCosts || 0))) * 100
+        },
+        soldDate: new Date().toISOString(),
+        isArchived: true,
+        updatedDate: new Date().toISOString()
+      };
+
+      const result = await propertyAPI.update(propertyId, updatedProperty);
+      if (result) {
+        await refreshProperties(); // Reload from database
+        console.log('Property marked as sold successfully');
+      } else {
+        alert('Failed to mark property as sold. Please try again.');
+        return;
+      }
+    } catch (error) {
+      console.error('Error marking property as sold:', error);
+      alert('Failed to mark property as sold. Please try again.');
+    }
+    
     setShowSoldModal(false);
     setPropertyToSell(null);
   };
