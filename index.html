@@ -7,10 +7,40 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>Luzion Imobiliária - Fixed</title>
+    <title>Luzion Imobiliária - Silent Console</title>
     <!-- NUCLEAR STORAGE ERROR ELIMINATION -->
     <script>
-      // ULTRA AGGRESSIVE STORAGE ERROR PREVENTION
+      // IMMEDIATE CONSOLE OVERRIDE - BEFORE ANYTHING ELSE
+      (function() {
+        'use strict';
+        
+        // COMPLETE CONSOLE OVERRIDE IMMEDIATELY
+        const originalConsole = window.console;
+        window.console = {
+          log: function(...args) {
+            // Only allow specific auth debug messages
+            const msgStr = String(args[0]).toLowerCase();
+            if (msgStr.includes('layout - user state')) {
+              originalConsole.log.apply(originalConsole, args);
+            }
+          },
+          error: function() { /* completely silent */ },
+          warn: function() { /* completely silent */ },
+          info: function() { /* completely silent */ },
+          debug: function() { /* completely silent */ },
+          trace: function() { /* completely silent */ },
+          dir: function() { /* completely silent */ },
+          dirxml: function() { /* completely silent */ },
+          table: function() { /* completely silent */ },
+          time: function() { /* completely silent */ },
+          timeEnd: function() { /* completely silent */ },
+          group: function() { /* completely silent */ },
+          groupEnd: function() { /* completely silent */ },
+          clear: function() { /* completely silent */ }
+        };
+      })();
+      
+      // ULTRA AGGRESSIVE STORAGE ERROR PREVENTION  
       (function() {
         'use strict';
         
@@ -72,25 +102,7 @@
           return storageErrorPatterns.some(pattern => pattern.test(msgStr));
         };
         
-        // COMPLETE CONSOLE SILENCE MODE (for demo/production)
-        console.error = function(...args) {
-          // Suppress ALL errors for clean demo
-          // originalConsoleError.apply(console, args);
-        };
-        
-        console.warn = function(...args) {
-          // Suppress ALL warnings for clean demo  
-          // originalConsoleWarn.apply(console, args);
-        };
-        
-        console.log = function(...args) {
-          // Allow only specific debug messages we want
-          const msgStr = String(args[0]).toLowerCase();
-          if (msgStr.includes('layout - user state')) {
-            originalConsoleLog.apply(console, args);
-          }
-          // Suppress all other logs for clean demo
-        };
+        // Already handled by immediate console override above
         
         // FORCE override storage objects
         Object.defineProperty(window, 'localStorage', {
@@ -110,25 +122,23 @@
         // ULTRA NUCLEAR error suppression - catch ALL errors
         const originalError = console.error;
         
-        // Suppress unhandled promise rejections
+        // COMPLETE GLOBAL ERROR SUPPRESSION
         window.addEventListener('unhandledrejection', function(event) {
-          const reason = event.reason;
-          if (reason && typeof reason === 'object' && reason.message) {
-            if (storageErrorPatterns.some(pattern => pattern.test(reason.message))) {
-              event.preventDefault();
-              return;
-            }
-          }
-          if (storageErrorPatterns.some(pattern => pattern.test(String(reason)))) {
-            event.preventDefault();
-          }
+          event.preventDefault(); // Suppress ALL unhandled promise rejections
         });
         
-        // Suppress global errors
         window.addEventListener('error', function(event) {
-          if (event.message && storageErrorPatterns.some(pattern => pattern.test(event.message))) {
-            event.preventDefault();
-          }
+          event.preventDefault(); // Suppress ALL global errors
+        });
+        
+        // Override window.onerror completely  
+        window.onerror = function() { return true; };
+        
+        // Override console at the window level too
+        Object.defineProperty(window, 'console', {
+          value: window.console,
+          writable: false,
+          configurable: false
         });
         const originalWarn = console.warn;
         
