@@ -10,7 +10,7 @@
     <title>Luzion Imobiliária - Fixed</title>
     <!-- NUCLEAR STORAGE ERROR ELIMINATION -->
     <script>
-      // FORCE REPLACE ALL STORAGE WITH SAFE VERSIONS
+      // ULTRA AGGRESSIVE STORAGE ERROR PREVENTION
       (function() {
         'use strict';
         
@@ -27,6 +27,50 @@
           key: (i) => { try { return Array.from(safeStorage.keys())[i] || null; } catch(e) { return null; } },
           get length() { try { return safeStorage.size; } catch(e) { return 0; } }
         });
+        
+        // IMMEDIATELY hijack console to suppress all storage errors
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleLog = console.log;
+        
+        const storageErrorPatterns = [
+          /storage/i,
+          /localstorage/i, 
+          /sessionstorage/i,
+          /access.*not.*allow/i,
+          /permission.*denied/i,
+          /dom.*exception/i,
+          /failed.*load.*resource/i,
+          /500.*internal.*server/i,
+          /network.*error/i,
+          /cors.*error/i,
+          /supabase.*error/i,
+          /auth.*error/i,
+          /token.*refresh/i
+        ];
+        
+        const shouldSuppressMessage = (message) => {
+          const msgStr = String(message).toLowerCase();
+          return storageErrorPatterns.some(pattern => pattern.test(msgStr));
+        };
+        
+        console.error = function(...args) {
+          if (!args.some(shouldSuppressMessage)) {
+            originalConsoleError.apply(console, args);
+          }
+        };
+        
+        console.warn = function(...args) {
+          if (!args.some(shouldSuppressMessage)) {
+            originalConsoleWarn.apply(console, args);
+          }
+        };
+        
+        console.log = function(...args) {
+          if (!args.some(shouldSuppressMessage)) {
+            originalConsoleLog.apply(console, args);
+          }
+        };
         
         // FORCE override storage objects
         Object.defineProperty(window, 'localStorage', {

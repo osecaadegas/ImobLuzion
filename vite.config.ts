@@ -11,8 +11,7 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       input: {
-        main: './index.html',
-        storageOverride: './src/lib/storageOverride.js'
+        main: './index.html'
       },
       output: {
         // Ensure unique hashes for all assets to prevent caching issues

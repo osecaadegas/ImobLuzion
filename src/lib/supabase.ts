@@ -10,30 +10,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env file.')
 }
 
-// Create a bulletproof storage adapter for Supabase that never throws errors
+// Create a bulletproof storage adapter for Supabase that NEVER accesses browser storage
 const supabaseStorageAdapter = {
-  getItem: (key: string) => {
-    try {
-      return SafeStorage.getItemWithMemoryFallback(key)
-    } catch (error) {
-      // Absolutely silent - return null if anything fails
-      return null
-    }
-  },
-  setItem: (key: string, value: string) => {
-    try {
-      SafeStorage.setItemWithMemoryFallback(key, value)
-    } catch (error) {
-      // Absolutely silent - do nothing if fails
-    }
-  },
-  removeItem: (key: string) => {
-    try {
-      SafeStorage.removeItemSilently(key)
-    } catch (error) {
-      // Absolutely silent - do nothing if fails
-    }
-  }
+  getItem: () => null,  // Always return null - never attempt storage access
+  setItem: () => {},    // Always do nothing - never attempt storage access  
+  removeItem: () => {}  // Always do nothing - never attempt storage access
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
