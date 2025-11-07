@@ -51,10 +51,16 @@ export default function AdminPanel() {
   const loadUsers = async () => {
     try {
       setIsLoadingUsers(true);
+      console.log('Loading users...');
       const fetchedUsers = await authAPI.getAllUsers();
+      console.log('Users loaded:', fetchedUsers);
       setUsers(fetchedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
+      // Check if it's a permission error
+      if (error instanceof Error && error.message.includes('permission')) {
+        console.warn('Database permission issue detected - this might be due to RLS policies');
+      }
       // Set empty array as fallback to prevent infinite loading
       setUsers([]);
     } finally {
@@ -77,18 +83,33 @@ export default function AdminPanel() {
   });
 
   const handleDeleteProperty = async (id: string) => {
-    if (confirm('Are you sure you want to delete this property?')) {
+    const confirmText = language === 'pt' ? 
+      'Tem certeza que deseja eliminar esta propriedade?' : 
+      'Are you sure you want to delete this property?';
+      
+    if (confirm(confirmText)) {
       try {
+        console.log('Deleting property:', id);
         const success = await propertyAPI.delete(id);
         if (success) {
           await refreshProperties(); // Reload from database
           console.log('Property deleted successfully');
+          const successMsg = language === 'pt' ? 
+            'Propriedade eliminada com sucesso!' : 
+            'Property deleted successfully!';
+          alert(successMsg);
         } else {
-          alert('Failed to delete property. Please try again.');
+          const failMsg = language === 'pt' ? 
+            'Falha ao eliminar propriedade. Tente novamente.' : 
+            'Failed to delete property. Please try again.';
+          alert(failMsg);
         }
       } catch (error) {
         console.error('Error deleting property:', error);
-        alert('Error deleting property. Please try again.');
+        const errorMsg = language === 'pt' ? 
+          'Erro ao eliminar propriedade. Verifique as permissões da base de dados.' : 
+          'Error deleting property. Check database permissions.';
+        alert(errorMsg);
       }
     }
   };
@@ -140,8 +161,15 @@ export default function AdminPanel() {
         if (result) {
           await refreshProperties(); // Reload from database
           console.log('Property updated successfully');
+          const successMsg = language === 'pt' ? 
+            'Propriedade atualizada com sucesso!' : 
+            'Property updated successfully!';
+          alert(successMsg);
         } else {
-          alert('Failed to update property. Please try again.');
+          const failMsg = language === 'pt' ? 
+            'Falha ao atualizar propriedade. Verifique as permissões.' : 
+            'Failed to update property. Check permissions.';
+          alert(failMsg);
           return;
         }
       } else {
@@ -235,7 +263,10 @@ export default function AdminPanel() {
             });
           }
         } else {
-          alert('Failed to create property. Please try again.');
+          const failMsg = language === 'pt' ? 
+            'Falha ao criar propriedade. Verifique as permissões da base de dados.' : 
+            'Failed to create property. Check database permissions.';
+          alert(failMsg);
           return;
         }
       }
@@ -244,7 +275,15 @@ export default function AdminPanel() {
       setEditingProperty(null);
     } catch (error) {
       console.error('Error saving property:', error);
-      alert('Failed to save property. Please try again.');
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      const errorMsg = language === 'pt' ? 
+        'Erro ao guardar propriedade. Verifique as permissões da base de dados e a ligação à internet.' : 
+        'Failed to save property. Check database permissions and internet connection.';
+      alert(errorMsg);
     }
   };
 
@@ -403,6 +442,16 @@ export default function AdminPanel() {
       {/* Modern Background */}
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="container mx-auto px-6 py-8 space-y-8">
+        
+        {/* Debug Info - Only show if there are issues */}
+        {(users.length === 0 && !isLoadingUsers) && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg">
+            <strong>Debug Info:</strong> No users loaded. Check database permissions.
+            <br />
+            <small>Users loading: {isLoadingUsers ? 'Yes' : 'No'} | Properties: {properties.length} | User role check: OK</small>
+          </div>
+        )}
+        
         {/* Modern Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-8 text-white transform hover:scale-105 transition-all duration-300">
