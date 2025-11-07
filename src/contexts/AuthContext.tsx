@@ -87,17 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let profile = await authAPI.getUserProfile(userId);
       const currentUser = await authAPI.getCurrentUser();
       
-      // If profile doesn't exist (Google OAuth first-time users), wait a moment and try again
+      // If profile doesn't exist (Google OAuth first-time users), try with a single retry
       if (!profile && currentUser) {
         console.log('Profile not found, waiting for trigger to create it...');
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
-        profile = await authAPI.getUserProfile(userId);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
         
-        // If still no profile, try one more time
-        if (!profile) {
-          console.log('Profile still not found, trying once more...');
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait another 2 seconds
+        try {
           profile = await authAPI.getUserProfile(userId);
+        } catch (retryError) {
+          console.error('Retry failed:', retryError);
         }
       }
       
@@ -114,8 +112,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('User profile loaded successfully:', userData);
         setIsLoading(false);
       } else {
-        console.error('Failed to load user profile after multiple attempts');
-        // Set loading to false even if we can't load the profile
+        console.error('Failed to load user profile - creating basic user data');
+        // Create a basic user object with available data
+        const basicUser: User = {
+          id: userId,
+          email: currentUser?.email || '',
+          name: currentUser?.email?.split('@')[0] || 'User',
+          role: 'user',
+          avatar: PlaceholderService.getAvatarPlaceholder(currentUser?.email || 'U', 40)
+        };
+        setUser(basicUser);
         setIsLoading(false);
       }
     } catch (error) {
