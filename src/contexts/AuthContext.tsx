@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { authAPI } from '../lib/database';
+import { PlaceholderService } from '../lib/placeholders';
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'agent';
   avatar?: string;
 }
 
@@ -101,12 +102,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (profile && currentUser) {
-        const userData = {
+        const userData: User = {
           id: profile.id,
           email: currentUser.email || '',
           name: profile.name,
           role: profile.role,
-          avatar: `https://via.placeholder.com/40x40/3b82f6/white?text=${profile.name.charAt(0).toUpperCase()}`
+          avatar: PlaceholderService.getAvatarPlaceholder(profile.name, 40)
         };
         
         setUser(userData);

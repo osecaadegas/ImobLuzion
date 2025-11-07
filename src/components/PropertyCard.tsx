@@ -4,6 +4,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
 import { Property } from '../types/Property';
 import { useLanguage } from '../contexts/LanguageContext';
+import { PlaceholderService, handleImageError } from '../lib/placeholders';
 
 interface PropertyCardProps {
   property: Property;
@@ -45,7 +46,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onLike, onContact
   };
 
   // Use the current image or fallback
-  const currentImage = images[currentImageIndex] || 'https://via.placeholder.com/400x300/gray/white?text=No+Image';
+  const currentImage = images[currentImageIndex] || PlaceholderService.getPropertyPlaceholder(400, 300, 'No Image');
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(language === 'pt' ? 'pt-PT' : 'en-US', {
@@ -71,6 +72,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onLike, onContact
           src={currentImage}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => handleImageError(e, PlaceholderService.getPropertyPlaceholder(400, 300, 'No Image'))}
         />
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>

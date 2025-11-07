@@ -9,6 +9,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useProperty } from '../contexts/PropertyContext';
 import { propertyAPI, authAPI } from '../lib/database';
 import { emailService } from '../lib/emailService';
+import { PlaceholderService } from '../lib/placeholders';
 
 interface User {
   id: string;
@@ -172,7 +173,7 @@ export default function AdminPanel() {
             name: propertyData.agentName,
             phone: propertyData.agentPhone,
             email: propertyData.agentEmail,
-            image: `https://via.placeholder.com/150x150/6c5ce7/white?text=${propertyData.agentName.charAt(0).toUpperCase()}`
+            image: PlaceholderService.getAgentPlaceholder(propertyData.agentName, 150)
           },
           listedDate: new Date().toISOString(),
           updatedDate: new Date().toISOString(),

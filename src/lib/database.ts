@@ -1,4 +1,5 @@
 import { supabase, type UserProfile } from './supabase'
+import { PlaceholderService } from './placeholders';
 
 // Use any types to avoid TypeScript conflicts during database integration
 
@@ -36,7 +37,7 @@ function transformDatabaseProperty(dbProp: any): any {
       name: dbProp.agent?.name || 'Agent',
       phone: dbProp.agent?.phone || '+351 900 000 000',
       email: dbProp.agent?.email || 'agent@example.com',
-      image: dbProp.agent?.image || 'https://via.placeholder.com/150'
+      image: dbProp.agent?.image || PlaceholderService.getSimplePlaceholder(150, 150, '#6b7280')
     }
   }
 }
