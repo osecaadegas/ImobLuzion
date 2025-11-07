@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import PropertyForm from '../components/PropertyForm';
 import MarkAsSoldModal from '../components/MarkAsSoldModal';
@@ -7,7 +7,7 @@ import { Plus, Edit, Trash2, Users, Home, DollarSign, TrendingUp, CheckCircle, B
 import { Property, PropertyFormData } from '../types/Property';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useProperty } from '../contexts/PropertyContext';
-import { propertyAPI } from '../lib/database';
+import { propertyAPI, authAPI } from '../lib/database';
 import { emailService } from '../lib/emailService';
 
 interface User {
@@ -31,58 +31,8 @@ export default function AdminPanel() {
   const [propertyToSell, setPropertyToSell] = useState<Property | null>(null);
   
   // User management state
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      name: 'Miguel Santos',
-      email: 'luzion@imob.com',
-      phone: '+351 912 345 678',
-      role: 'admin',
-      registeredDate: new Date('2024-01-15'),
-      favoriteProperties: ['1', '3', '5'],
-      contactedProperties: ['1', '2', '3']
-    },
-    {
-      id: '2',
-      name: 'Ana Costa',
-      email: 'ana@imob.com',
-      phone: '+351 913 456 789',
-      role: 'admin',
-      registeredDate: new Date('2024-02-20'),
-      favoriteProperties: ['2', '4'],
-      contactedProperties: ['2', '4', '6']
-    },
-    {
-      id: '3',
-      name: 'Paulo Silva',
-      email: 'paulo@imob.com',
-      phone: '+351 914 567 890',
-      role: 'admin',
-      registeredDate: new Date('2024-03-10'),
-      favoriteProperties: ['1', '2', '7'],
-      contactedProperties: ['1', '5', '7']
-    },
-    {
-      id: '4',
-      name: 'Maria Oliveira',
-      email: 'maria@example.com',
-      phone: '+351 915 678 901',
-      role: 'user',
-      registeredDate: new Date('2024-06-15'),
-      favoriteProperties: ['3', '6'],
-      contactedProperties: ['3', '6']
-    },
-    {
-      id: '5',
-      name: 'João Ferreira',
-      email: 'joao@example.com',
-      phone: '+351 916 789 012',
-      role: 'agent',
-      registeredDate: new Date('2024-07-01'),
-      favoriteProperties: ['4', '5', '8'],
-      contactedProperties: ['4', '5', '8', '9']
-    }
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [userFormData, setUserFormData] = useState({
@@ -91,6 +41,23 @@ export default function AdminPanel() {
     phone: '',
     role: 'user' as 'admin' | 'user' | 'agent'
   });
+  
+  // Load users from database
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setIsLoadingUsers(true);
+      const fetchedUsers = await authAPI.getAllUsers();
+      setUsers(fetchedUsers);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
   
   // Email notification state
   const [showEmailNotification, setShowEmailNotification] = useState(false);
@@ -301,33 +268,52 @@ export default function AdminPanel() {
     setShowUserForm(true);
   };
 
-  const handleDeleteUser = (id: string) => {
+  const handleDeleteUser = async (id: string) => {
     if (confirm(language === 'pt' ? 'Tem certeza que deseja excluir este utilizador?' : 'Are you sure you want to delete this user?')) {
-      setUsers(prev => prev.filter(u => u.id !== id));
+      try {
+        const success = await authAPI.deleteUser(id);
+        if (success) {
+          await loadUsers(); // Reload users from database
+          console.log('User deleted successfully');
+        } else {
+          alert('Failed to delete user. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Error deleting user. Please try again.');
+      }
     }
   };
 
-  const handleSaveUser = () => {
-    if (editingUser) {
-      // Update existing user
-      setUsers(prev => prev.map(u =>
-        u.id === editingUser.id
-          ? { ...u, ...userFormData }
-          : u
-      ));
-    } else {
-      // Add new user
-      const newUser: User = {
-        id: Date.now().toString(),
-        ...userFormData,
-        registeredDate: new Date(),
-        favoriteProperties: [],
-        contactedProperties: []
-      };
-      setUsers(prev => [...prev, newUser]);
+  const handleSaveUser = async () => {
+    try {
+      if (editingUser) {
+        // Update existing user
+        const success = await authAPI.updateUserProfile(editingUser.id, {
+          name: userFormData.name,
+          role: userFormData.role
+        });
+        
+        if (success) {
+          await loadUsers(); // Reload users from database
+          console.log('User updated successfully');
+        } else {
+          alert('Failed to update user. Please try again.');
+          return;
+        }
+      } else {
+        // Note: Creating new users requires email/password which should be handled differently
+        // For now, we'll show a message that user creation should be done via registration
+        alert('New users must register through the registration process. Only existing users can be edited here.');
+        return;
+      }
+      
+      setShowUserForm(false);
+      setEditingUser(null);
+    } catch (error) {
+      console.error('Error saving user:', error);
+      alert('Failed to save user. Please try again.');
     }
-    setShowUserForm(false);
-    setEditingUser(null);
   };
 
   const handleCloseUserForm = () => {
@@ -774,7 +760,25 @@ export default function AdminPanel() {
                         </tr>
                       </thead>
                       <tbody className="bg-white/70 divide-y divide-gray-200">
-                        {users.map(user => (
+                        {isLoadingUsers ? (
+                          <tr>
+                            <td colSpan={4} className="px-8 py-12 text-center">
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="w-6 h-6 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-gray-600">
+                                  {language === 'pt' ? 'Carregando utilizadores...' : 'Loading users...'}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : users.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="px-8 py-12 text-center text-gray-500">
+                              {language === 'pt' ? 'Nenhum utilizador encontrado' : 'No users found'}
+                            </td>
+                          </tr>
+                        ) : (
+                          users.map(user => (
                           <tr key={user.id} className="hover:bg-white/90 transition-colors duration-200">
                             <td className="px-8 py-6 whitespace-nowrap">
                               <div className="flex items-center">
@@ -832,7 +836,8 @@ export default function AdminPanel() {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                        ))
+                        )}
                       </tbody>
                     </table>
                   </div>

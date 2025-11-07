@@ -289,5 +289,48 @@ export const authAPI = {
       console.error('Error updating user profile:', error)
       return null
     }
+  },
+
+  async getAllUsers(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select(`
+          *,
+          auth_user:auth.users!inner(email, created_at)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      
+      // Transform the data to match the UI interface
+      return data ? data.map((user: any) => ({
+        id: user.id,
+        name: user.name,
+        email: user.auth_user?.email || '',
+        phone: '+351 900 000 000', // Default phone since we don't store it yet
+        role: user.role,
+        registeredDate: new Date(user.auth_user?.created_at || user.created_at),
+        favoriteProperties: [], // TODO: Implement favorites tracking
+        contactedProperties: [] // TODO: Implement contact tracking
+      })) : []
+    } catch (error) {
+      console.error('Error fetching all users:', error)
+      return []
+    }
+  },
+
+  async deleteUser(userId: string): Promise<boolean> {
+    try {
+      // Note: This will cascade delete the user profile due to foreign key constraint
+      const { error } = await supabase.auth.admin.deleteUser(userId)
+      
+      if (error) throw error
+      
+      return true
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      return false
+    }
   }
 }
