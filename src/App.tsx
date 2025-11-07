@@ -12,6 +12,7 @@ import FinancialDashboard from './pages/FinancialDashboard';
 import PublicPropertyBrowser from './pages/PublicPropertyBrowser';
 import PropertyDetailWrapper from './pages/PropertyDetailWrapper';
 import { SafeStorage } from './lib/storage';
+import { StorageErrorBoundary } from './components/StorageErrorBoundary';
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
@@ -110,17 +111,19 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
-      <DarkModeProvider>
-        <LanguageProvider>
-          <PropertyProvider>
-            <AuthProvider>
-              <AppRoutes />
-            </AuthProvider>
-          </PropertyProvider>
-        </LanguageProvider>
-      </DarkModeProvider>
-    </Router>
+    <StorageErrorBoundary>
+      <Router>
+        <DarkModeProvider>
+          <LanguageProvider>
+            <PropertyProvider>
+              <AuthProvider>
+                <AppRoutes />
+              </AuthProvider>
+            </PropertyProvider>
+          </LanguageProvider>
+        </DarkModeProvider>
+      </Router>
+    </StorageErrorBoundary>
   );
 }
 
