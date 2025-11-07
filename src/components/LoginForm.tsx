@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import DarkModeToggle from './DarkModeToggle';
 import { Eye, EyeOff, LogIn, UserPlus, Home } from 'lucide-react';
-import { SafeStorage } from '../lib/storage';
+import { SafeStorage } from '../lib/storage.js';
 
 interface LoginFormProps {
   onToggleMode: () => void;

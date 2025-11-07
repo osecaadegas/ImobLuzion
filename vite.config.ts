@@ -10,6 +10,10 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: false,
     rollupOptions: {
+      input: {
+        main: './index.html',
+        storageOverride: './src/lib/storageOverride.js'
+      },
       output: {
         // Ensure unique hashes for all assets to prevent caching issues
         entryFileNames: 'assets/[name]-[hash].js',

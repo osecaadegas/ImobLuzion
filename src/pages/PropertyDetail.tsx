@@ -245,6 +245,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ onLike, onContact }) =>
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
+                    sandbox="allow-scripts allow-same-origin allow-forms"
                     src={`https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(
                       `${property.location.address}, ${property.location.city}, ${property.location.state}`
                     )}&zoom=15`}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { SafeStorage } from '../lib/storage';
+import { SafeStorage } from '../lib/storage.js';
 
 interface DarkModeContextType {
   isDarkMode: boolean;

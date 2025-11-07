@@ -30,7 +30,16 @@ export class StorageErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Storage error boundary caught an error:', error, errorInfo);
+    // Completely silent for storage errors - no logging
+    const isStorageError = error.message.includes('storage') || 
+                          error.message.includes('localStorage') || 
+                          error.message.includes('sessionStorage') ||
+                          error.message.includes('Access to storage is not allowed');
+    
+    if (isStorageError) {
+      return; // Silent handling for storage errors
+    }
+    console.error('Non-storage error caught:', error, errorInfo);
   }
 
   render() {

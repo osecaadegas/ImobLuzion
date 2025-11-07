@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { SafeStorage } from '../lib/storage';
+import { SafeStorage } from '../lib/storage.js';
 
 export type Language = 'pt' | 'en';
 

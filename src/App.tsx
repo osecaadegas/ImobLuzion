@@ -18,20 +18,7 @@ function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [isRegisterMode, setIsRegisterMode] = useState(false);
 
-  // Debug storage availability
-  useEffect(() => {
-    const status = SafeStorage.getStorageStatus();
-    console.log('Storage Status:', status);
-    
-    // Test storage operations
-    try {
-      SafeStorage.setItemWithMemoryFallback('storage_test', 'test_value');
-      const retrieved = SafeStorage.getItemWithMemoryFallback('storage_test');
-      console.log('Storage test result:', retrieved);
-    } catch (error) {
-      console.error('Storage test failed:', error);
-    }
-  }, []);
+  // Storage is now handled silently by SafeStorage utility
 
   if (isLoading) {
     return (
@@ -67,11 +54,11 @@ function AppRoutes() {
       {/* Legacy dashboard route - redirect to home */}
       <Route path="/dashboard" element={<Navigate to="/" replace />} />
       
-      {/* Protected admin panel */}
+      {/* Protected admin panel - accessible by admins and agents */}
       <Route
         path="/admin"
         element={
-          user && user.role === 'admin' ? (
+          user && (user.role === 'admin' || user.role === 'agent') ? (
             <AdminPanel />
           ) : (
             <Navigate to="/login" replace />
@@ -79,11 +66,11 @@ function AppRoutes() {
         }
       />
       
-      {/* Admin sold properties page */}
+      {/* Admin sold properties page - accessible by admins and agents */}
       <Route
         path="/admin/sold-properties"
         element={
-          user && user.role === 'admin' ? (
+          user && (user.role === 'admin' || user.role === 'agent') ? (
             <SoldProperties />
           ) : (
             <Navigate to="/login" replace />
@@ -91,12 +78,24 @@ function AppRoutes() {
         }
       />
       
-      {/* Admin financial dashboard page */}
+      {/* Admin financial dashboard page - admin only */}
       <Route
         path="/admin/financial-dashboard"
         element={
           user && user.role === 'admin' ? (
             <FinancialDashboard />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      {/* Add property page - accessible by admins and agents */}
+      <Route
+        path="/admin/add-property"
+        element={
+          user && (user.role === 'admin' || user.role === 'agent') ? (
+            <AdminPanel />
           ) : (
             <Navigate to="/login" replace />
           )

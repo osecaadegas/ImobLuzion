@@ -51,9 +51,9 @@ export default function AdminPanel() {
   const loadUsers = async () => {
     try {
       setIsLoadingUsers(true);
-      console.log('Loading users...');
+      // Loading users for admin panel
       const fetchedUsers = await authAPI.getAllUsers();
-      console.log('Users loaded:', fetchedUsers);
+      // Users loaded successfully
       setUsers(fetchedUsers);
     } catch (error) {
       console.error('Error loading users:', error);

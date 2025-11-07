@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LanguageSelector } from './LanguageSelector';
 import DarkModeToggle from './DarkModeToggle';
-import { LogOut, Home, BarChart3, Heart, MessageCircle, ChevronDown } from 'lucide-react';
+import { LogOut, Home, BarChart3, Heart, MessageCircle, ChevronDown, Settings, Plus, FileText } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -116,6 +116,63 @@ export default function Layout({ children, title }: LayoutProps) {
                         <div className="text-xs text-gray-500 dark:text-gray-400">Entre em contato</div>
                       </div>
                     </Link>
+
+                    {/* Admin & Agent Options */}
+                    {(user.role === 'admin' || user.role === 'agent') && (
+                      <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
+                        <div className="px-4 py-2">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            {user.role === 'admin' ? 'Administração' : 'Agente'}
+                          </p>
+                        </div>
+                        
+                        <Link
+                          to="/admin"
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <Settings className="w-4 h-4 text-blue-600" />
+                          <div>
+                            <div className="font-medium">
+                              {user.role === 'admin' ? 'Painel Admin' : 'Painel Agente'}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Gerenciar propriedades e usuários
+                            </div>
+                          </div>
+                        </Link>
+
+                        <Link
+                          to="/admin/add-property"
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <Plus className="w-4 h-4 text-green-600" />
+                          <div>
+                            <div className="font-medium">Adicionar Propriedade</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              Nova propriedade ao catálogo
+                            </div>
+                          </div>
+                        </Link>
+
+                        {user.role === 'admin' && (
+                          <Link
+                            to="/admin/financial-dashboard"
+                            className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            onClick={() => setShowProfileMenu(false)}
+                          >
+                            <FileText className="w-4 h-4 text-orange-600" />
+                            <div>
+                              <div className="font-medium">Dashboard Financeiro</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                Relatórios e análises
+                              </div>
+                            </div>
+                          </Link>
+                        )}
+                      </div>
+                    )}
                     
                     <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
                       <button

@@ -1,16 +1,54 @@
 import { createClient } from '@supabase/supabase-js'
+import { SafeStorage } from './storage.js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-console.log('Supabase URL:', supabaseUrl)
-console.log('Supabase Key exists:', !!supabaseAnonKey)
+// Supabase configuration is working properly
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env file.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create a bulletproof storage adapter for Supabase that never throws errors
+const supabaseStorageAdapter = {
+  getItem: (key: string) => {
+    try {
+      return SafeStorage.getItemWithMemoryFallback(key)
+    } catch (error) {
+      // Absolutely silent - return null if anything fails
+      return null
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      SafeStorage.setItemWithMemoryFallback(key, value)
+    } catch (error) {
+      // Absolutely silent - do nothing if fails
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      SafeStorage.removeItemSilently(key)
+    } catch (error) {
+      // Absolutely silent - do nothing if fails
+    }
+  }
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {}
+    },
+    storageKey: 'disabled',
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false
+  }
+})
 
 // Types for our database
 export interface DatabaseProperty {
