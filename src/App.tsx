@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -11,10 +11,26 @@ import SoldProperties from './pages/SoldProperties';
 import FinancialDashboard from './pages/FinancialDashboard';
 import PublicPropertyBrowser from './pages/PublicPropertyBrowser';
 import PropertyDetailWrapper from './pages/PropertyDetailWrapper';
+import { SafeStorage } from './lib/storage';
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+
+  // Debug storage availability
+  useEffect(() => {
+    const status = SafeStorage.getStorageStatus();
+    console.log('Storage Status:', status);
+    
+    // Test storage operations
+    try {
+      SafeStorage.setItemWithMemoryFallback('storage_test', 'test_value');
+      const retrieved = SafeStorage.getItemWithMemoryFallback('storage_test');
+      console.log('Storage test result:', retrieved);
+    } catch (error) {
+      console.error('Storage test failed:', error);
+    }
+  }, []);
 
   if (isLoading) {
     return (
