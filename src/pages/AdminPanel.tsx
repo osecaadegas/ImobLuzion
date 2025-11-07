@@ -54,6 +54,8 @@ export default function AdminPanel() {
       setUsers(fetchedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
+      // Set empty array as fallback to prevent infinite loading
+      setUsers([]);
     } finally {
       setIsLoadingUsers(false);
     }

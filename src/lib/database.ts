@@ -295,10 +295,7 @@ export const authAPI = {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select(`
-          *,
-          auth_user:auth.users!inner(email, created_at)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -307,10 +304,10 @@ export const authAPI = {
       return data ? data.map((user: any) => ({
         id: user.id,
         name: user.name,
-        email: user.auth_user?.email || '',
-        phone: '+351 900 000 000', // Default phone since we don't store it yet
+        email: 'user@example.com', // Default email since we can't access auth.users
+        phone: '+351 900 000 000', // Default phone
         role: user.role,
-        registeredDate: new Date(user.auth_user?.created_at || user.created_at),
+        registeredDate: new Date(user.created_at),
         favoriteProperties: [], // TODO: Implement favorites tracking
         contactedProperties: [] // TODO: Implement contact tracking
       })) : []

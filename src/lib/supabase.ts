@@ -63,7 +63,7 @@ export interface DatabaseProperty {
 export interface UserProfile {
   id: string
   name: string
-  role: 'admin' | 'user'
+  role: 'admin' | 'user' | 'agent'
   created_at: string
   updated_at: string
 }
