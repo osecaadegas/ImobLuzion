@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Users, Home, DollarSign, TrendingUp, CheckCircle, B
 import { Property, PropertyFormData } from '../types/Property';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useProperty } from '../contexts/PropertyContext';
+import { propertyAPI } from '../lib/database';
 import { emailService } from '../lib/emailService';
 
 interface User {
@@ -22,7 +23,7 @@ interface User {
 
 export default function AdminPanel() {
   const { language } = useLanguage();
-  const { properties, setProperties } = useProperty();
+  const { properties, setProperties, refreshProperties } = useProperty();
   const [showPropertyForm, setShowPropertyForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'properties' | 'users' | 'finances'>('overview');
@@ -105,9 +106,20 @@ export default function AdminPanel() {
     sentCount: 0
   });
 
-  const handleDeleteProperty = (id: string) => {
+  const handleDeleteProperty = async (id: string) => {
     if (confirm('Are you sure you want to delete this property?')) {
-      setProperties(prev => prev.filter(p => p.id !== id));
+      try {
+        const success = await propertyAPI.delete(id);
+        if (success) {
+          await refreshProperties(); // Reload from database
+          console.log('Property deleted successfully');
+        } else {
+          alert('Failed to delete property. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error deleting property:', error);
+        alert('Error deleting property. Please try again.');
+      }
     }
   };
 
