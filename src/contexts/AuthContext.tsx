@@ -40,17 +40,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }, 10000);
 
-    // Listen for auth changes (silently)
+    // Listen for auth changes with debug info
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Reduced console logging for cleaner output
+      console.log('🔐 Auth event:', event, 'User email:', session?.user?.email);
       
       if (!mounted) return;
 
       if (event === 'SIGNED_IN' && session?.user) {
+        console.log('✅ User signed in, loading profile for:', session.user.id);
         try {
           await loadUserProfile(session.user.id);
         } catch (error) {
-          console.error('Error in auth state change loadUserProfile:', error);
+          console.error('❌ Error loading user profile:', error);
           setIsLoading(false);
         }
       } else if (event === 'SIGNED_OUT') {

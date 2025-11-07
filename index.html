@@ -23,7 +23,10 @@
         Object.defineProperty(console, 'log', {
           value: function(...args) {
             const msg = String(args[0] || '').toLowerCase();
-            if (msg.includes('layout - user state')) {
+            if (msg.includes('layout - user state') || 
+                msg.includes('🔐') || msg.includes('✅') || msg.includes('❌') ||
+                msg.includes('auth event') || msg.includes('loading user profile') ||
+                msg.includes('profile loaded')) {
               _log.apply(console, args);
             }
           },
@@ -32,7 +35,14 @@
         });
         
         Object.defineProperty(console, 'error', {
-          value: function() { /* silence ALL errors */ },
+          value: function(...args) {
+            const msg = String(args[0] || '').toLowerCase();
+            if (msg.includes('❌') || msg.includes('error loading') || 
+                msg.includes('failed to load user profile')) {
+              _error.apply(console, args);
+            }
+            /* silence other errors */
+          },
           writable: false,
           configurable: false
         });
